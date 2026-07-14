@@ -28,6 +28,12 @@ At load and once a minute, the page reads the clock in your configured timezone,
 finds the next departure at or after "now" for each direction, and renders the
 board. Past times drop off; the next one is highlighted.
 
+It opens on **today** when today is one of the configured `days` (otherwise the
+first day), and keeps following the live day across midnight — until a viewer
+taps a specific day tab, which pins their choice. The `UPCOMING / FULL` toggle
+above the board switches between the next departures and the whole day's
+timetable (`display.showFullSchedule` sets the default).
+
 ---
 
 ## Configuration schema
@@ -74,9 +80,10 @@ const CONFIG = {
   },
 
   display: {
-    feedCount:     10,     // upcoming rows listed per column
-    showSchematic: true,   // the RIO ⇄ LVCC diagram under the header
-    showSimClock:  false,  // dev-only time-travel slider (keep false when published)
+    feedCount:        10,    // upcoming rows listed per column (Upcoming view)
+    showSchematic:    true,  // the RIO ⇄ LVCC diagram under the header
+    showFullSchedule: false, // default the board to the full day vs. just upcoming
+    showSimClock:     false, // dev-only time-travel slider (keep false when published)
   },
 };
 ```
@@ -164,11 +171,12 @@ All values are 6-digit hex (`#rrggbb`).
 
 ### `display`
 
-| field           | type    | default | notes |
-| --------------- | ------- | ------- | ----- |
-| `feedCount`     | number  | `10`    | How many upcoming departures to list per column. |
-| `showSchematic` | boolean | `true`  | Toggles the little RIO ⇄ LVCC diagram under the header. |
-| `showSimClock`  | boolean | `false` | Shows a dev-only "time travel" slider to preview any time of day. Keep `false` for the published board. |
+| field              | type    | default | notes |
+| ------------------ | ------- | ------- | ----- |
+| `feedCount`        | number  | `10`    | How many upcoming departures to list per column, in the **Upcoming** view (the **Full** view shows the entire day). |
+| `showSchematic`    | boolean | `true`  | Toggles the little RIO ⇄ LVCC diagram under the header. |
+| `showFullSchedule` | boolean | `false` | The board's default view. `false` starts on **Upcoming** (future departures only); `true` starts on **Full** (the whole day, past departures dimmed). Either way, an on-page `UPCOMING / FULL` toggle lets viewers switch. |
+| `showSimClock`     | boolean | `false` | Shows a dev-only "time travel" slider to preview any time of day. Keep `false` for the published board. |
 
 ### Status messages (automatic)
 

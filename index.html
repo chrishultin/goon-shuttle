@@ -130,9 +130,10 @@
       accent: '#25e6ff',   // selected day tab + blinking cursor
     },
     display: {
-      feedCount:     10,     // how many upcoming departures to list per column
-      showSchematic: true,   // the little RIO <-> LVCC diagram under the header
-      showSimClock:  false,  // dev-only "time travel" slider - set true to test other times
+      feedCount:        10,    // upcoming departures listed per column (Upcoming view only)
+      showSchematic:    true,  // the little RIO <-> LVCC diagram under the header
+      showFullSchedule: false, // default the board to the whole day instead of just upcoming
+      showSimClock:     false, // dev-only "time travel" slider - set true to test other times
     },
   };
 
@@ -182,12 +183,12 @@
   }
 
   // Everything the UI needs for one direction on one day.
-  function computeDir(dayKey,dirKey,nowMin,feedCount){
+  function computeDir(dayKey,dirKey,nowMin,feedCount,full){
     const d = CONFIG.directions[dirKey];
     const meta = { color:d.color, tint:d.tint||d.color, badge:d.badge, label:d.label, soft:hexToRgba(d.color,.12) };
     const bs = blocks(dayKey,dirKey);
     const times = expand(bs);
-    if(!times.length) return { ...meta, hasNext:false, noNext:true, statusText:'no service', last:'', next:null, following:[], feed:[] };
+    if(!times.length) return { ...meta, hasAny:false, hasNext:false, noNext:true, statusText:'no service', last:'', next:null, following:[], feed:[] };
 
     const firstMin = times[0], lastMin = times[times.length-1];
     let phase = 'active';
@@ -205,16 +206,16 @@
     });
     const next = nextIdx === -1 ? null : all[nextIdx];
     const following = nextIdx === -1 ? [] : all.slice(nextIdx+1, nextIdx+3);
-    const feed = all.filter(a => !a.isPast).slice(0, feedCount);
+    const feed = full ? all : all.filter(a => !a.isPast).slice(0, feedCount);
     const statusText = phase === 'ended' ? 'last shuttle departed'
       : phase === 'before' ? `first shuttle ${m2t(firstMin)}`
       : (freqNow ? `every ${freqNow} min right now` : 'in service');
 
-    return { ...meta, hasNext:!!next, noNext:!next, statusText, last:m2t(lastMin), next, following, feed };
+    return { ...meta, hasAny:true, hasNext:!!next, noNext:!next, statusText, last:m2t(lastMin), next, following, feed };
   }
 
   // ---- app state -----------------------------------------------------------
-  const state = { day:null, override:null, now:null };
+  const state = { day:null, dayPinned:false, override:null, now:null, showFull: CONFIG.display.showFullSchedule ?? false };
 
   function computeView(){
     const now = state.now || tzNow();
@@ -224,10 +225,11 @@
     const live = state.override == null;
     const isLiveDate = CONFIG.days.some(d => d.iso === now.iso);
     const feedCount = CONFIG.display.feedCount ?? 10;
+    const full = state.showFull;
 
     const A = {
-      r2l: computeDir(dayKey,'r2l',nowMin,feedCount),
-      l2r: computeDir(dayKey,'l2r',nowMin,feedCount),
+      r2l: computeDir(dayKey,'r2l',nowMin,feedCount,full),
+      l2r: computeDir(dayKey,'l2r',nowMin,feedCount,full),
     };
 
     // Slider spans the actual service window for the selected day.
@@ -245,6 +247,7 @@
     return {
       showSchematic: CONFIG.display.showSchematic ?? true,
       showSim:       CONFIG.display.showSimClock ?? false,
+      showFull:      full,
       dayKey, dayLabel:dayMeta.label, dayDate:dayMeta.date,
       clock, min:lo, max:hi, sliderVal:nowMin, A,
     };
@@ -303,13 +306,19 @@
     </div>`;
   }
 
+  // Segmented-toggle button style (Upcoming | Full).
+  function segSt(active){
+    return `font:700 9px 'Space Mono';letter-spacing:.06em;padding:5px 10px;cursor:pointer;border:none;`
+      + (active ? `color:#08080e;background:${T.accent};` : `color:#9a9ab4;background:transparent;`);
+  }
+
   function feedCol(x){
     const c = x.color;
     const rows = x.feed.map(dep => `<div style="${dep.st}">
       <span style="display:flex;align-items:center;gap:7px;"><span>${dep.time}</span>${dep.isNext?`<span style="font:700 8px 'Space Mono';padding:1px 5px;border-radius:4px;background:#fff;color:#08080e;letter-spacing:.08em;">NEXT</span>`:''}</span>
       <span style="font:400 9px 'Space Mono';opacity:.7;">${dep.rel}</span>
     </div>`).join('');
-    const empty = x.noNext ? `<div style="font:400 10px 'Space Mono';color:#565673;padding:8px 4px;">no more today</div>` : '';
+    const empty = x.feed.length ? '' : `<div style="font:400 10px 'Space Mono';color:#565673;padding:8px 4px;">${x.hasAny ? 'no more today' : 'no service'}</div>`;
     return `<div>
       <div style="font:700 10px 'Space Mono';color:${c};letter-spacing:.08em;padding:0 4px 6px;border-bottom:1px solid ${hexToRgba(c,.25)};margin-bottom:7px;">${x.badge}</div>
       ${rows}${empty}
@@ -358,7 +367,13 @@
         ${nextCard('r2l', v.A.r2l, '11px')}
         ${nextCard('l2r', v.A.l2r, '18px')}
 
-        <div style="font:700 11px 'Space Mono';letter-spacing:.14em;color:#8a8aa4;margin-bottom:10px;">// UPCOMING — ${v.dayLabel} ${v.dayDate}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="font:700 11px 'Space Mono';letter-spacing:.14em;color:#8a8aa4;">// ${v.showFull ? 'FULL' : 'UPCOMING'} — ${v.dayLabel} ${v.dayDate}</div>
+          <div style="display:flex;border:1px solid rgba(255,255,255,.12);border-radius:7px;overflow:hidden;">
+            <button onclick="APP.setFull(false)" style="${segSt(!v.showFull)}">UPCOMING</button>
+            <button onclick="APP.setFull(true)" style="${segSt(v.showFull)}">FULL</button>
+          </div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           ${feedCol(v.A.r2l)}
           ${feedCol(v.A.l2r)}
@@ -378,7 +393,8 @@
   // ---- controller ----------------------------------------------------------
   const APP = {
     scrubbing: false,
-    pick(k){ state.day = k; paint(); },
+    pick(k){ state.day = k; state.dayPinned = true; paint(); },   // tapping a day pins it (stops live-day follow)
+    setFull(b){ state.showFull = b; paint(); },
     goLive(){ state.override = null; paint(); },
     scrubStart(){ this.scrubbing = true; },                            // pause auto-ticks while dragging
     scrub(val){ state.override = +val; if(!this.scrubbing) paint(); }, // keyboard/click update live; drag defers to release
@@ -400,7 +416,7 @@
   function tick(){
     if(APP.scrubbing) return;                    // don't rebuild the slider mid-drag
     state.now = tzNow();
-    if(!state.day){                              // auto-select today if it's an event day
+    if(!state.dayPinned){                        // follow the live day (today if it's an event day) until the user taps one
       const m = CONFIG.days.find(d => d.iso === state.now.iso);
       state.day = m ? m.key : CONFIG.days[0].key;
     }
