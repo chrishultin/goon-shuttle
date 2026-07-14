@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  Square (1:1) social preview image source. Renders at 1200x1200. Source for
+  ../og-image-square.png. Regenerate from the repo root:
+
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2 \
+      --window-size=1200,1200 --virtual-time-budget=6000 \
+      --screenshot=og-image-square.png "file://$PWD/tools/og-image-square.html"
+    sips -z 1200 1200 og-image-square.png
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;box-sizing:border-box;}
+  html,body{width:1200px;height:1200px;overflow:hidden;}
+  body{
+    font-family:'Chakra Petch',system-ui,sans-serif;color:#e9e9f5;
+    background-color:#08080e;
+    background-image:
+      radial-gradient(110% 45% at 50% -4%, rgba(255,47,134,.18), transparent 55%),
+      radial-gradient(110% 45% at 50% 104%, rgba(37,230,255,.15), transparent 55%),
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size:auto,auto,60px 60px,60px 60px;
+    padding:88px 80px;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .mono{font-family:'Space Mono',monospace;}
+  .end{font-weight:600;font-size:40px;letter-spacing:.08em;}
+  .card{border-radius:26px;padding:36px 40px;}
+  .badge{font-weight:700;font-size:22px;border-radius:999px;padding:6px 18px;}
+  .time{font-weight:700;font-size:104px;line-height:1;color:#fff;}
+</style>
+</head>
+<body>
+
+  <div>
+    <div class="mono" style="font-weight:700;font-size:68px;letter-spacing:.11em;color:#ff2f86;text-shadow:0 0 34px rgba(255,47,134,.6);">DEF CON<br>// SHUTTLE</div>
+    <div class="mono" style="font-size:27px;letter-spacing:.1em;color:#7a7a97;margin-top:20px;">RIO ⇄ LVCC · LAS VEGAS · PT</div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:28px;">
+    <div class="end">RIO</div>
+    <div style="flex:1;position:relative;height:56px;">
+      <div style="position:absolute;top:50%;left:14px;right:14px;height:4px;background:linear-gradient(90deg,#ff2f86,#25e6ff);opacity:.6;transform:translateY(-50%);"></div>
+      <div class="mono" style="position:absolute;top:0;right:16px;font-weight:700;font-size:19px;color:#ff2f86;">R→L ▸</div>
+      <div class="mono" style="position:absolute;bottom:0;left:16px;font-weight:700;font-size:19px;color:#25e6ff;">▾ L→R</div>
+      <div style="position:absolute;top:50%;left:0;width:22px;height:22px;border-radius:50%;background:#ff2f86;transform:translateY(-50%);box-shadow:0 0 22px #ff2f86;"></div>
+      <div style="position:absolute;top:50%;right:0;width:22px;height:22px;border-radius:50%;background:#25e6ff;transform:translateY(-50%);box-shadow:0 0 22px #25e6ff;"></div>
+    </div>
+    <div class="end">LVCC</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:30px;">
+    <div class="card" style="border:1px solid rgba(255,47,134,.35);background:linear-gradient(180deg,rgba(255,47,134,.12),rgba(255,47,134,.02));box-shadow:0 0 70px -28px rgba(255,47,134,.9);">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+        <span class="mono badge" style="color:#ff2f86;border:1px solid #ff2f86;">R→L</span>
+        <span style="font-weight:600;font-size:32px;">Rio → LVCC</span>
+        <span class="mono" style="margin-left:auto;font-size:20px;color:#9a9ab4;">every 20 min</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:24px;">
+        <span class="mono time" style="text-shadow:0 0 48px rgba(255,47,134,.7);">17:20</span>
+        <span style="font-weight:600;font-size:34px;color:#ff8fc0;">in 4 min</span>
+      </div>
+    </div>
+    <div class="card" style="border:1px solid rgba(37,230,255,.35);background:linear-gradient(180deg,rgba(37,230,255,.11),rgba(37,230,255,.02));box-shadow:0 0 70px -28px rgba(37,230,255,.9);">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+        <span class="mono badge" style="color:#25e6ff;border:1px solid #25e6ff;">L→R</span>
+        <span style="font-weight:600;font-size:32px;">LVCC → Rio</span>
+        <span class="mono" style="margin-left:auto;font-size:20px;color:#9a9ab4;">every 20 min</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:24px;">
+        <span class="mono time" style="text-shadow:0 0 48px rgba(37,230,255,.7);">17:26</span>
+        <span style="font-weight:600;font-size:34px;color:#8fe9ff;">in 10 min</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mono" style="display:flex;justify-content:space-between;align-items:center;font-size:20px;color:#565673;">
+    <span>next departures · Las Vegas time</span>
+    <span style="color:#25e6ff;font-weight:700;">dc-shuttle.spedi.one &gt;_</span>
+  </div>
+
+</body>
+</html>

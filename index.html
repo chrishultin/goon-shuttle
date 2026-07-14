@@ -6,21 +6,34 @@
   <title>DEF CON Shuttle</title>
   <!-- Static page metadata for browser tabs and shared-link previews. This is
        separate from the CONFIG block below. Edit here too if you rebrand, and
-       update the absolute URLs below if your Pages owner/repo differs. -->
+       update the absolute URLs if you host on a different domain. -->
   <meta name="description" content="Live next-departure board for the DEF CON Rio ⇄ LVCC shuttle, in Las Vegas time.">
   <meta name="theme-color" content="#08080e">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
   <meta property="og:type" content="website">
   <meta property="og:title" content="DEF CON Shuttle">
   <meta property="og:description" content="Live next-departure board for the DEF CON Rio ⇄ LVCC shuttle, in Las Vegas time.">
-  <meta property="og:url" content="https://socgoons.github.io/goon-shuttle/">
-  <meta property="og:image" content="https://socgoons.github.io/goon-shuttle/og-image.png">
+  <meta property="og:url" content="https://dc-shuttle.spedi.one/">
+  <!-- Wide 1.91:1 preview (primary; used by most platforms). -->
+  <meta property="og:image" content="https://dc-shuttle.spedi.one/og-image.png">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="DEF CON shuttle board — next Rio to LVCC and LVCC to Rio departures">
+  <!-- Square 1:1 preview (alternate; for contexts that prefer square). -->
+  <meta property="og:image" content="https://dc-shuttle.spedi.one/og-image-square.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1200">
   <meta property="og:image:alt" content="DEF CON shuttle board — next Rio to LVCC and LVCC to Rio departures">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="DEF CON Shuttle">
   <meta name="twitter:description" content="Live next-departure board for the DEF CON Rio ⇄ LVCC shuttle, in Las Vegas time.">
-  <meta name="twitter:image" content="https://socgoons.github.io/goon-shuttle/og-image.png">
+  <meta name="twitter:image" content="https://dc-shuttle.spedi.one/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -394,17 +407,6 @@
     paint();
   }
 
-  // Favicon: a tiny R->L / L->R schematic drawn from the configured colors.
-  function setFavicon(){
-    const D = CONFIG.directions;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="${T.bg}"/><line x1="32" y1="50" x2="68" y2="50" stroke="#7a4a6a" stroke-width="3"/><circle cx="32" cy="50" r="8" fill="${D.r2l.color}"/><circle cx="68" cy="50" r="8" fill="${D.l2r.color}"/><polygon points="45,35 55,40 45,45" fill="${D.r2l.color}"/><polygon points="55,60 45,55 55,50" fill="${D.l2r.color}"/></svg>`;
-    let link = document.querySelector('link[rel="icon"]');
-    if(!link){ link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-    link.type = 'image/svg+xml';
-    link.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
-  }
-
-  setFavicon();
   tick();
   setInterval(tick, 1000);
   </script>

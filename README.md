@@ -199,57 +199,72 @@ the slider that appears at the bottom.
 
 ## Deploy to GitHub Pages
 
-The repo is Pages-ready: `index.html` is at the root, a
-[`.nojekyll`](.nojekyll) file tells Pages to serve it as-is, and a workflow at
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) publishes on every
-push to `main`.
+The repo is Pages-ready: `index.html` is at the root, [`.nojekyll`](.nojekyll)
+tells Pages to serve it as-is, [`CNAME`](CNAME) binds the custom domain
+`dc-shuttle.spedi.one`, and [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+publishes on every push to `main`.
 
-First, create the repo on GitHub and push (once):
+**1. Create the repo and push** (once):
 
 ```sh
 gh auth login                 # if you haven't already
-gh repo create <owner>/goon-shuttle --public --source=. --remote=origin --push
+gh repo create chrishultin/goon-shuttle --public --source=. --remote=origin --push
 ```
 
 <sub>No `gh`? Create an empty repo on github.com, then:
-`git remote add origin git@github.com:<owner>/goon-shuttle.git && git push -u origin main`</sub>
+`git remote add origin git@github.com:chrishultin/goon-shuttle.git && git push -u origin main`</sub>
 
-Then turn on Pages — pick **one** method:
+**2. Enable Pages:** Repo → **Settings → Pages → Build and deployment → Source:
+GitHub Actions**. Every push to `main` then redeploys via the workflow.
 
-**A. GitHub Actions (recommended, uses the included workflow)**
-1. Repo → **Settings → Pages**.
-2. **Build and deployment → Source: GitHub Actions**.
-3. Done. Every push to `main` redeploys automatically via the workflow.
+**3. Point DNS at it.** At the DNS provider for `spedi.one`, add a subdomain record:
 
-**B. Deploy from a branch (no workflow needed)**
-1. Repo → **Settings → Pages**.
-2. **Source: Deploy from a branch** → Branch: **`main`**, folder: **`/ (root)`** → **Save**.
+| Type  | Name         | Value                    |
+| ----- | ------------ | ------------------------ |
+| CNAME | `dc-shuttle` | `chrishultin.github.io.` |
 
-Your board goes live at:
+Back in **Settings → Pages → Custom domain**, confirm `dc-shuttle.spedi.one` (the
+[`CNAME`](CNAME) file already sets it), wait for the DNS check to pass, then tick
+**Enforce HTTPS**.
 
-```
-https://<owner>.github.io/goon-shuttle/
-```
+Your board goes live at **https://dc-shuttle.spedi.one/**.
 
 Updating the schedule after launch is just: edit `CONFIG`, commit, push.
 
 ---
 
-## Social preview image
+## Brand assets (previews + icons)
 
-Shared links unfurl with [`og-image.png`](og-image.png) (1200×630), wired up via
-the Open Graph / Twitter `<meta>` tags in `index.html`. Because social crawlers
-don't run JavaScript, it's a static file rendered from
-[`tools/og-image.html`](tools/og-image.html). If you rebrand, edit that HTML and
-regenerate the PNG from the repo root:
+Social crawlers and browsers don't run the page's JavaScript, so the preview
+images and icons are pre-rendered static files, generated from sources in
+[`tools/`](tools). If you rebrand, edit the source and re-render.
+
+| File | Size | Source | Used for |
+| ---- | ---- | ------ | -------- |
+| [`og-image.png`](og-image.png) | 1200×630 | [`tools/og-image.html`](tools/og-image.html) | `og:image` (primary) + Twitter `summary_large_image` |
+| [`og-image-square.png`](og-image-square.png) | 1200×1200 | [`tools/og-image-square.html`](tools/og-image-square.html) | secondary `og:image` for 1:1 contexts |
+| [`favicon.svg`](favicon.svg) | vector | edit directly | modern browser tab icon |
+| [`favicon.ico`](favicon.ico) | 16 / 32 / 48 | `favicon.svg` → [`tools/make-ico.mjs`](tools/make-ico.mjs) | fallback tab icon (`/favicon.ico`, older clients) |
+| [`apple-touch-icon.png`](apple-touch-icon.png) | 180×180 | `favicon.svg` | iOS home-screen icon |
+
+Regenerate everything from the repo root (needs Google Chrome + `sips`, macOS):
 
 ```sh
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2 \
-  --window-size=1200,630 --virtual-time-budget=6000 \
-  --screenshot=og-image.png "file://$PWD/tools/og-image.html"
-sips -z 630 1200 og-image.png     # downscale the 2x capture to 1200x630
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+shot(){ "$CHROME" --headless --disable-gpu --hide-scrollbars \
+  --force-device-scale-factor=2 --window-size="$2" --virtual-time-budget=6000 \
+  --screenshot="$1" "file://$PWD/$3" >/dev/null 2>&1; }
+
+# preview images (rendered at 2x, then downscaled to spec)
+shot og-image.png        1200,630  tools/og-image.html        && sips -z 630 1200 og-image.png
+shot og-image-square.png 1200,1200 tools/og-image-square.html && sips -z 1200 1200 og-image-square.png
+
+# favicons (from favicon.svg, via the sizing wrapper)
+shot /tmp/f.png 512,512 tools/favicon-render.html
+for s in 16 32 48 180; do sips -z $s $s /tmp/f.png --out /tmp/favicon-$s.png; done
+cp /tmp/favicon-180.png apple-touch-icon.png
+node tools/make-ico.mjs favicon.ico /tmp/favicon-16.png /tmp/favicon-32.png /tmp/favicon-48.png
 ```
 
-The tags use absolute `https://socgoons.github.io/goon-shuttle/…` URLs (crawlers
-require absolute) — update them in `index.html` if your Pages owner/repo differs.
+The preview `<meta>` tags use absolute `https://dc-shuttle.spedi.one/…` URLs
+(crawlers require absolute) — update them in `index.html` if the domain changes.
