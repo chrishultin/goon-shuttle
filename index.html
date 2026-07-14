@@ -72,7 +72,8 @@
    *
    *  Each [from, to, every, phase?] = [start "HH:MM", end "HH:MM",
    *  minutes-between-departures, optional-offset-minutes]. The end time is
-   *  exclusive. List as many blocks per direction as you need (rush hour, etc.).
+   *  inclusive (a run can land on it). List as many blocks as you need per
+   *  direction (rush hour, etc.); use '24:00' as an end for "up to midnight".
    * ========================================================================== */
   const CONFIG = {
 
@@ -107,15 +108,15 @@
     schedule: {
       wed: {
         l2r: [
-                ['12:00', '15:00', 60],
+                ['12:00', '19:00', 60],
         ],
         r2l: [
-                ['12:30', '15:30', 60]
+                ['12:30', '19:30', 60]
         ]
       },
       thu: {
         l2r: [
-                ['2:00', '5:00', 60],
+                ['2:00', '5:30', 60],
                 ['6:00', '8:30', 30],
                 ['12:00', '21:00', 60]
         ],
@@ -139,6 +140,32 @@
                 ['12:30', '17:30', 60],
                 ['18:00', '21:00', 30],
                 ['21:30', '24:00', 60]
+        ]
+      },
+      sat: {
+        l2r: [
+                ['1:00', '6:00', 60],
+                ['7:00', '9:30', 30],
+                ['12:00', '17:00', 60],
+                ['17:30', '20:30', 30],
+                ['21:00', '24:00', 60]
+        ],
+        r2l: [
+                ['1:30', '5:30', 60],
+                ['6:30', '9:30', 30],
+                ['12:30', '17:30', 60],
+                ['18:00', '21:00', 30],
+                ['21:30', '24:00', 60]
+        ]
+      },
+      sun: {
+        l2r: [
+          ['1:00', '7:00', 60],
+          ['8:00', '19:00', 30]
+        ],
+        r2l: [
+          ['1:30', '7:30', 60],
+          ['8:30', '19:00', 30]
         ]
       }
     },
@@ -171,11 +198,17 @@
   const blocks = (dayKey,dirKey) => (CONFIG.schedule[dayKey]?.[dirKey] || [])
     .map(b => ({ from:b[0], to:b[1], every:b[2], phase:b[3] || 0 }));
 
-  // Expand frequency blocks into concrete departure minutes, sorted.
+  // Expand frequency blocks into concrete departure minutes, sorted + de-duped.
+  // The `to` end time is INCLUSIVE — a run lands on it when it's reachable in whole
+  // `every` steps from `from`. Runs at or past midnight (>= 24:00) are dropped, so a
+  // block ending at '24:00' means "up to the last run before midnight".
   function expand(bs){
     const out = [];
-    bs.forEach(b => { const s = p2m(b.from)+(b.phase||0), e = p2m(b.to); for(let t=s;t<e;t+=b.every) out.push(t); });
-    return out.sort((a,b)=>a-b);
+    bs.forEach(b => {
+      const s = p2m(b.from)+(b.phase||0), e = p2m(b.to);
+      for(let t=s;t<=e;t+=b.every) if(t < 24*60) out.push(t);
+    });
+    return out.sort((a,b)=>a-b).filter((t,i,a) => i === 0 || t !== a[i-1]);
   }
 
   // Human relative time for a departure `diff` minutes from now.

@@ -144,17 +144,17 @@ An object keyed by `day.key`. Each day has an `r2l` and an `l2r` array of
 | element | type   | required | notes |
 | ------- | ------ | -------- | ----- |
 | `from`  | string | yes      | First departure window start, `"HH:MM"` (24-hour). **Inclusive.** |
-| `to`    | string | yes      | Window end, `"HH:MM"`. **Exclusive** — a departure exactly at `to` is not generated. |
+| `to`    | string | yes      | Window end, `"HH:MM"`. **Inclusive** — a departure lands exactly on `to` when it's reachable from `from` in whole `every` steps. Use `'24:00'` to mean "up to midnight" (a run at midnight itself is dropped). |
 | `every` | number | yes      | Minutes between departures. |
 | `phase` | number | no       | Minutes to shift the first departure, so the return leg doesn't leave the same minute as the outbound. Defaults to `0`. |
 
 Notes:
 
-- Departures are `from + phase`, then `+ every`, `+ every`… while `< to`.
+- Departures are `from + phase`, then `+ every`, `+ every`… up to and including `to`.
 - List as many blocks per direction as you like (wider gaps early/late, tighter
-  during rush). All blocks are merged and sorted.
-- Because `to` is exclusive, adjacent blocks like `['07:00','09:00',20]` then
-  `['09:00','19:00',10]` produce no duplicate at 09:00.
+  during rush). All blocks are merged, sorted, and de-duplicated.
+- Adjacent blocks that share a boundary, like `['07:00','09:00',20]` then
+  `['09:00','19:00',10]`, are de-duplicated — the shared `09:00` appears once.
 - If a `day.key` is missing from `schedule`, or a direction's array is empty,
   that direction shows **no service**.
 
