@@ -232,3 +232,24 @@ https://<owner>.github.io/goon-shuttle/
 ```
 
 Updating the schedule after launch is just: edit `CONFIG`, commit, push.
+
+---
+
+## Social preview image
+
+Shared links unfurl with [`og-image.png`](og-image.png) (1200×630), wired up via
+the Open Graph / Twitter `<meta>` tags in `index.html`. Because social crawlers
+don't run JavaScript, it's a static file rendered from
+[`tools/og-image.html`](tools/og-image.html). If you rebrand, edit that HTML and
+regenerate the PNG from the repo root:
+
+```sh
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2 \
+  --window-size=1200,630 --virtual-time-budget=6000 \
+  --screenshot=og-image.png "file://$PWD/tools/og-image.html"
+sips -z 630 1200 og-image.png     # downscale the 2x capture to 1200x630
+```
+
+The tags use absolute `https://socgoons.github.io/goon-shuttle/…` URLs (crawlers
+require absolute) — update them in `index.html` if your Pages owner/repo differs.
